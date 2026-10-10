@@ -67,6 +67,13 @@
 
         figcaption { font-size: 0.9rem; color: #555; }
         figcaption strong { color: #222; }
+
+        .tied {
+            background: #f4e3cd;
+            border-radius: 4px;
+            padding: 1px 5px;
+            white-space: nowrap;
+        }
     </style>
 </head>
 
@@ -196,6 +203,52 @@
                         <p class="text-justify">
                             Does AnyRank maintain family-wise error rate (FWER) control, even under incorrect priors &mdash; and does this guard against the ranking failures seen in Bradley&ndash;Terry baselines? On RoboArena evaluation data, Bradley&ndash;Terry methods can be both <em>miscalibrated</em> (e.g., confidently ranking one policy above another when the opposite is more likely true) and <em>temporally inconsistent</em> (flipping the ranking as more trials are collected). AnyRank avoids both failure modes: its rankings at any stopping time remain correct with probability at least \(1-\alpha\) and never contradict a ranking produced with more data.
                         </p>
+
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered align-middle text-center" style="font-size:0.92rem;">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th></th>
+                                        <th>Method</th>
+                                        <th>RoboArena4</th>
+                                        <th>RoboArena7</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td rowspan="3" class="fw-bold">Ours</td>
+                                        <td>AnyRank</td>
+                                        <td>A &gt; E &gt; F &gt; G</td>
+                                        <td>A &gt; E &gt; F &gt; G, <span class="tied">{A,B,C,D}</span>, <span class="tied">{B,C,D,E}</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>AnyRank<sub>0</sub></td>
+                                        <td>A &gt; E &gt; F &gt; G</td>
+                                        <td>A &gt; E &gt; F &gt; G, <span class="tied">{A,B,C,D}</span>, <span class="tied">{B,C,D,E}</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>AnyRank<sub>&infin;</sub></td>
+                                        <td>A &gt; E &gt; F &gt; G</td>
+                                        <td>A &gt; E &gt; F &gt; G, <span class="tied">{A,B,C,D}</span>, <span class="tied">{B,C,D,E}</span>, <span class="tied">{B,C,D,F}</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td rowspan="2" class="fw-bold">Baselines</td>
+                                        <td>Bonferroni</td>
+                                        <td>A &gt; E &gt; F &gt; G</td>
+                                        <td>A &gt; E &gt; F &gt; G, <span class="tied">{A,B,C,D}</span>, <span class="tied">{B,C,D,E}</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Weighted Bonferroni</td>
+                                        <td><span class="tied">{A,E}</span> &gt; F &gt; G</td>
+                                        <td><span class="tied">{A,B,C,D,E}</span> &gt; F &gt; G</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="text-muted" style="font-size:0.85rem;">
+                            <strong>Table 1.</strong> Ranking DROID policies from RoboArena with all available data. Policies: &pi;<sub>0</sub>-FAST (A), PG-FAST (B), PG-FAST-Specialist (C), PG-FSQ (D), PG-Diff (E), &pi;<sub>0</sub> (F), PG-Bin (G). Groups in curly braces are not statistically distinguishable by that method.
+                        </p>
+
                         <img src="assets/ranking-example.png" width="100%" alt="Violin plots of task progress for seven RoboArena policies, with compact letter groupings showing AnyRank's statistically distinguishable ranking.">
                         <figcaption class="mt-2">AnyRank's partial ranking of seven DROID policies from RoboArena, shown as compact letter groupings over violin plots of raw task-progress scores. Policies sharing a letter are not statistically distinguishable.</figcaption>
                     </div>

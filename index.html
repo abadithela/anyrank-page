@@ -174,17 +174,51 @@
             <div class="col-md-10 col-lg-10">
                 <h3 class="mt-4">Experiments</h3>
                 <p class="text-justify">
-                    AnyRank is evaluated on real-world policy evaluation benchmarks, including <a href="#">RoboArena</a> and the TRI-LBM dataset. It consistently recovers rankings that are statistically sound and self-consistent across stopping times, while existing Bradley&ndash;Terry and Bonferroni-style baselines either overstate confidence or burn far more hardware trials to reach the same conclusions.
+                    AnyRank is evaluated on real-world policy evaluation benchmarks, including <a href="#">RoboArena</a> and the TRI-LBM dataset, totaling over 7000 hardware rollouts across 20+ policies. We organize our findings around four research questions.
                 </p>
 
-                <div class="row mt-3">
-                    <div class="col-md-6 mb-3">
+                <ul class="nav nav-tabs mt-3" id="expTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="tab-reliability-btn" data-bs-toggle="tab" data-bs-target="#tab-reliability" type="button" role="tab" aria-controls="tab-reliability" aria-selected="true">Statistical Reliability</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-efficiency-btn" data-bs-toggle="tab" data-bs-target="#tab-efficiency" type="button" role="tab" aria-controls="tab-efficiency" aria-selected="false">Efficiency</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-priors-btn" data-bs-toggle="tab" data-bs-target="#tab-priors" type="button" role="tab" aria-controls="tab-priors" aria-selected="false">Impact of Priors</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-scalability-btn" data-bs-toggle="tab" data-bs-target="#tab-scalability" type="button" role="tab" aria-controls="tab-scalability" aria-selected="false">Scalability</button>
+                    </li>
+                </ul>
+                <div class="tab-content border border-top-0 rounded-bottom p-3 mb-3" id="expTabsContent">
+                    <div class="tab-pane fade show active" id="tab-reliability" role="tabpanel" aria-labelledby="tab-reliability-btn">
+                        <p class="text-justify">
+                            Does AnyRank maintain family-wise error rate (FWER) control, even under incorrect priors &mdash; and does this guard against the ranking failures seen in Bradley&ndash;Terry baselines? On RoboArena evaluation data, Bradley&ndash;Terry methods can be both <em>miscalibrated</em> (e.g., confidently ranking one policy above another when the opposite is more likely true) and <em>temporally inconsistent</em> (flipping the ranking as more trials are collected). AnyRank avoids both failure modes: its rankings at any stopping time remain correct with probability at least \(1-\alpha\) and never contradict a ranking produced with more data.
+                        </p>
                         <img src="assets/ranking-example.png" width="100%" alt="Violin plots of task progress for seven RoboArena policies, with compact letter groupings showing AnyRank's statistically distinguishable ranking.">
-                        <figcaption class="mt-2">AnyRank's ranking of seven DROID policies from RoboArena, shown as compact letter groupings over violin plots of raw task-progress scores. Policies sharing a letter are not statistically distinguishable.</figcaption>
+                        <figcaption class="mt-2">AnyRank's partial ranking of seven DROID policies from RoboArena, shown as compact letter groupings over violin plots of raw task-progress scores. Policies sharing a letter are not statistically distinguishable.</figcaption>
                     </div>
-                    <div class="col-md-6 mb-3">
+                    <div class="tab-pane fade" id="tab-efficiency" role="tabpanel" aria-labelledby="tab-efficiency-btn">
+                        <p class="text-justify">
+                            Does AnyRank improve statistical power &mdash; both hypotheses rejected and total sample complexity &mdash; over other FWER-controlling methods? We measure efficiency via <strong>Rejection Count</strong> (how many pairwise comparisons are resolved) and <strong>Sample Complexity</strong> (how many hardware rollouts it takes to resolve them). Across RoboArena and TRI-LBM, AnyRank and its variants reject more hypotheses using fewer samples than standard and weighted Bonferroni corrections.
+                        </p>
                         <img src="assets/sample-efficiency.png" width="100%" alt="Bar chart comparing the number of hardware evaluations needed by AnyRank, AnyRank with no prior, and Bonferroni-style baselines to fully rank four held-out RoboArena policies.">
-                        <figcaption class="mt-2">On a held-out RoboArena ranking task, AnyRank reaches a full ranking (6/6 hypotheses resolved) in roughly half the hardware evaluations required by Bonferroni-style baselines, which also leave some comparisons unresolved.</figcaption>
+                        <figcaption class="mt-2">On RoboArena4 (with held-out evaluations as a prior), the AnyRank family achieves roughly a 50% reduction in hardware trials needed to reach a full ranking compared to Bonferroni, while weighted Bonferroni fails to fully distinguish several policies.</figcaption>
+                    </div>
+                    <div class="tab-pane fade" id="tab-priors" role="tabpanel" aria-labelledby="tab-priors-btn">
+                        <p class="text-justify">
+                            Does the sample complexity of AnyRank improve with more accurate priors? With weak priors (e.g., world-model rollouts with low correlation to real-world performance), AnyRank performs comparably to its no-prior ablation AnyRank<sub>0</sub>. But with a strong prior &mdash; such as a world model fine-tuned on the specific task, achieving <i>r</i>&nbsp;=&nbsp;0.89 correlation with real-world performance &mdash; AnyRank requires substantially fewer hardware trials to reach a full ranking.
+                        </p>
+                        <img src="assets/impact-of-priors.png" width="100%" alt="Comparison of AnyRank with a strong prior against AnyRank with no prior, showing AnyRank reaches a full policy ranking in fewer hardware evaluations.">
+                        <figcaption class="mt-2">With a strong prior (&gamma;=10) on the DROID-local Fold Towel task, AnyRank reaches a full policy ranking in fewer hardware evaluations than its no-prior counterpart AnyRank<sub>0</sub>. An imperfect prior never invalidates AnyRank's statistical guarantees &mdash; it only affects how quickly a ranking is reached.</figcaption>
+                    </div>
+                    <div class="tab-pane fade" id="tab-scalability" role="tabpanel" aria-labelledby="tab-scalability-btn">
+                        <p class="text-justify">
+                            How does the sample complexity of AnyRank scale with the number of policies? Ranking more policies increases the number of pairwise comparisons quadratically and pushes policy performance gaps closer together on average, making the underlying ranking problem fundamentally harder for any statistically valid method. On synthetic data ranking up to 20 policies, and on all 15 policies from RoboArena (including several retracted for having too few trials), AnyRank uniformly reduces sample complexity relative to standard Bonferroni corrections at every scale we test, while remaining robust to policies with limited evaluation evidence.
+                        </p>
+                        <img src="assets/scalability.png" width="100%" alt="Violin plots showing AnyRank's ranking behavior as the number of compared policies increases.">
+                        <figcaption class="mt-2">Scalability of AnyRank as the number of ranked policies increases, evaluated across all 15 policies from RoboArena.</figcaption>
                     </div>
                 </div>
             </div>
@@ -221,6 +255,7 @@
 
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <script>
         function copyBibtex(btn) {
             const text = document.getElementById('bibtex-text').value;
